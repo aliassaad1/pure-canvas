@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, X } from "lucide-react";
+import { Bot, Send, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const N8N_WEBHOOK_URL = "https://bychat.app.n8n.cloud/webhook/ai-chat";
 
 type Message = {
   id: string;
@@ -12,42 +14,96 @@ type Message = {
 type Props = {
   agentName: string;
   storeName: string;
+  sellerId: string;
+  buyerId: string | null;
+  buyerName: string;
+  autoGreeting?: string;
   onClose?: () => void;
 };
 
-export function ShopChatPanel({ agentName, storeName, onClose }: Props) {
+export function ShopChatPanel({
+  agentName,
+  storeName,
+  sellerId,
+  buyerId,
+  buyerName,
+  autoGreeting,
+  onClose,
+}: Props) {
+  const [sessionId] = useState(
+    () => `${sellerId}_${buyerId || "guest"}_${Date.now()}`
+  );
+
+  const greeting =
+    autoGreeting ||
+    `Hi! I'm ${agentName} from ${storeName} 👋 How can I help you today?`;
+
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "greeting",
-      role: "assistant",
-      content: `Hi! I'm ${agentName} from ${storeName} 👋 How can I help you today?`,
-    },
+    { id: "greeting", role: "assistant", content: greeting },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, isLoading]);
 
-  const send = () => {
-    if (!input.trim()) return;
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: input.trim() };
+  const send = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+    };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setIsLoading(true);
 
-    // Mock auto-response
-    setTimeout(() => {
+    try {
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          seller_id: sellerId,
+          buyer_id: buyerId || null,
+          buyer_name: buyerName,
+          message: userMsg.content,
+          session_id: sessionId,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Network response error");
+
+      const data = await response.json();
+      const replyText =
+        data.response || "Sorry, I couldn't process that. Please try again.";
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: replyText,
+        },
+      ]);
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content:
-            "Thanks for your message! Our AI agent is being set up. Soon I'll be able to help you browse products, answer questions, and take orders! 🛍️",
+            "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
         },
       ]);
-    }, 800);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -62,7 +118,12 @@ export function ShopChatPanel({ agentName, storeName, onClose }: Props) {
           <p className="text-xs text-muted-foreground truncate">{storeName}</p>
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="shrink-0"
+          >
             <X className="w-4 h-4" />
           </Button>
         )}
@@ -76,7 +137,7 @@ export function ShopChatPanel({ agentName, storeName, onClose }: Props) {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-md"
                   : "bg-muted text-foreground rounded-bl-md"
@@ -86,6 +147,17 @@ export function ShopChatPanel({ agentName, storeName, onClose }: Props) {
             </div>
           </div>
         ))}
+
+        {/* Typing indicator */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
+              <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
+              <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input */}
@@ -102,9 +174,19 @@ export function ShopChatPanel({ agentName, storeName, onClose }: Props) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="flex-1"
+            disabled={isLoading}
           />
-          <Button type="submit" size="icon" variant="hero" disabled={!input.trim()}>
-            <Send className="w-4 h-4" />
+          <Button
+            type="submit"
+            size="icon"
+            variant="hero"
+            disabled={!input.trim() || isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </form>
       </div>

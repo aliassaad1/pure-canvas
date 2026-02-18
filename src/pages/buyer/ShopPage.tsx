@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Store, Clock, MapPin, Truck, CreditCard, DollarSign, Banknote,
   MessageCircle, ShoppingCart, Plus, Check
@@ -18,8 +19,23 @@ import { Link } from "react-router-dom";
 export default function ShopPage() {
   const { sellerId } = useParams<{ sellerId: string }>();
   const { addItem, items } = useCart();
+  const { user } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+
+  const { data: buyerProfile } = useQuery({
+    queryKey: ["buyer-profile-chat", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("buyers")
+        .select("id, full_name")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   const { data: seller } = useQuery({
     queryKey: ["shop-seller", sellerId],
@@ -107,6 +123,9 @@ export default function ShopPage() {
     : [];
 
   const agentName = agentConfig?.agent_name || "Shopping Assistant";
+  const autoGreeting = agentConfig?.auto_greeting || undefined;
+  const buyerId = buyerProfile?.id ?? null;
+  const buyerName = buyerProfile?.full_name || user?.email?.split("@")[0] || "Customer";
   const cartItemCount = items.filter((i) => i.sellerId === sellerId).length;
 
   if (!seller) {
@@ -262,6 +281,10 @@ export default function ShopPage() {
           <ShopChatPanel
             agentName={agentName}
             storeName={seller.business_name}
+            sellerId={sellerId!}
+            buyerId={buyerId}
+            buyerName={buyerName}
+            autoGreeting={autoGreeting}
             onClose={() => setChatOpen(false)}
           />
         </div>

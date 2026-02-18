@@ -29,12 +29,12 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Link to="/auth">
+          <Link to="/auth" target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" className="hidden sm:inline-flex">
               Sign In
             </Button>
           </Link>
-          <Link to="/auth">
+          <Link to="/auth" target="_blank" rel="noopener noreferrer">
             <Button variant="hero" size="lg">
               Get Started
             </Button>

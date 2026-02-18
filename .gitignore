@@ -25,3 +25,6 @@ dist-ssr
 nul
 .env
 .claude/
+.mcp.json
+bychat-ai-agent-workflow.json
+jihad.md

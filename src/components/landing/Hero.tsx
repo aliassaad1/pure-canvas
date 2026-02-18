@@ -56,7 +56,7 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link to="/auth">
+            <Link to="/auth" target="_blank" rel="noopener noreferrer">
               <Button variant="hero" size="xl" className="group">
                 Get Started
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
