@@ -34,6 +34,7 @@ const mainNav = [
 
 const settingsNav = [
   { title: "AI Agent Settings", url: "/seller/ai-settings", icon: Bot },
+  { title: "WhatsApp", url: "/seller/whatsapp", icon: MessageSquare },
   { title: "Integrations", url: "/seller/integrations", icon: Plug },
   { title: "Settings", url: "/seller/settings", icon: Settings },
 ];
