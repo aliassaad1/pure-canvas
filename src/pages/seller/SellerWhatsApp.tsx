@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Phone,
   Info,
@@ -60,6 +60,7 @@ export default function SellerWhatsApp() {
   const [showModal, setShowModal] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (META_APP_ID) loadFacebookSDK(META_APP_ID);
@@ -85,42 +86,66 @@ export default function SellerWhatsApp() {
 
     setConnecting(true);
 
-    window.FB.login(
-      async (response) => {
-        if (!response.authResponse?.code) {
-          setConnecting(false);
-          toast({ title: "Cancelled", description: "WhatsApp setup was cancelled." });
-          return;
-        }
-        try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          const jwt = sessionData.session?.access_token;
+    /* Safety timeout — reset if the Meta popup never calls back */
+    connectTimeoutRef.current = setTimeout(() => {
+      setConnecting(false);
+      toast({
+        title: "Timed out",
+        description: "The Meta popup didn't respond. Make sure pop-ups are allowed in your browser and try again.",
+        variant: "destructive",
+      });
+    }, 120_000); // 2 minutes
 
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-connect`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
-            body: JSON.stringify({ code: response.authResponse.code, seller_id: seller!.id }),
-          });
-
-          const result = await res.json();
-          if (!res.ok) throw new Error(result.error ?? "Connection failed");
-
-          await queryClient.invalidateQueries({ queryKey: ["seller-profile"] });
-          setShowModal(false);
-          toast({ title: "WhatsApp connected!", description: `${result.phone_number} is now active.` });
-        } catch (err: unknown) {
-          toast({ title: "Connection failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
-        } finally {
-          setConnecting(false);
-        }
-      },
-      {
-        config_id: META_CONFIG_ID,
-        response_type: "code",
-        override_default_response_type: true,
-        extras: { setup: {}, featurized_type: "lef", sessionInfoVersion: 2 },
+    const clearConnectTimeout = () => {
+      if (connectTimeoutRef.current) {
+        clearTimeout(connectTimeoutRef.current);
+        connectTimeoutRef.current = null;
       }
-    );
+    };
+
+    try {
+      window.FB.login(
+        async (response) => {
+          clearConnectTimeout();
+          if (!response.authResponse?.code) {
+            setConnecting(false);
+            toast({ title: "Cancelled", description: "WhatsApp setup was cancelled." });
+            return;
+          }
+          try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const jwt = sessionData.session?.access_token;
+
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-connect`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
+              body: JSON.stringify({ code: response.authResponse.code, seller_id: seller!.id }),
+            });
+
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error ?? "Connection failed");
+
+            await queryClient.invalidateQueries({ queryKey: ["seller-profile"] });
+            setShowModal(false);
+            toast({ title: "WhatsApp connected!", description: `${result.phone_number} is now active.` });
+          } catch (err: unknown) {
+            toast({ title: "Connection failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+          } finally {
+            setConnecting(false);
+          }
+        },
+        {
+          config_id: META_CONFIG_ID,
+          response_type: "code",
+          override_default_response_type: true,
+          extras: { setup: {}, featurized_type: "lef", sessionInfoVersion: 2 },
+        }
+      );
+    } catch (err: unknown) {
+      clearConnectTimeout();
+      setConnecting(false);
+      toast({ title: "Error", description: err instanceof Error ? err.message : "Could not open Meta popup.", variant: "destructive" });
+    }
   }
 
   /* ── Disconnect ── */
@@ -270,8 +295,22 @@ export default function SellerWhatsApp() {
               disabled={connecting}
             >
               {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <WhatsAppIcon className="w-5 h-5" />}
-              {connecting ? "Connecting…" : "Start WhatsApp Setup"}
+              {connecting ? "Waiting for Meta popup…" : "Start WhatsApp Setup"}
             </Button>
+
+            {connecting && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground"
+                onClick={() => {
+                  if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+                  setConnecting(false);
+                }}
+              >
+                Cancel
+              </Button>
+            )}
 
             <p className="text-xs text-center text-muted-foreground">
               This takes about 3 minutes and happens only once.
