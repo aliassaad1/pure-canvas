@@ -5,10 +5,13 @@ import {
   AlertTriangle,
   Loader2,
   Unplug,
+  KeyRound,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSellerProfile } from "@/hooks/useSellerProfile";
@@ -60,6 +64,10 @@ export default function SellerWhatsApp() {
   const [showModal, setShowModal] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [manualPhoneId, setManualPhoneId] = useState("");
+  const [manualAccessToken, setManualAccessToken] = useState("");
+  const [manualPhoneNumber, setManualPhoneNumber] = useState("");
+  const [manualSaving, setManualSaving] = useState(false);
   const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -88,6 +96,41 @@ export default function SellerWhatsApp() {
       toast({ title: "Connection failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
     } finally {
       setConnecting(false);
+    }
+  }
+
+  /* ── Manual credentials save ── */
+  async function handleManualSave() {
+    if (!manualPhoneId.trim() || !manualAccessToken.trim() || !manualPhoneNumber.trim()) {
+      toast({ title: "Missing fields", description: "Please fill in all three fields.", variant: "destructive" });
+      return;
+    }
+    setManualSaving(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const jwt = sessionData.session?.access_token;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-connect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}` },
+        body: JSON.stringify({
+          phone_id: manualPhoneId.trim(),
+          access_token: manualAccessToken.trim(),
+          phone_number: manualPhoneNumber.trim(),
+          seller_id: seller!.id,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error ?? "Save failed");
+      await queryClient.invalidateQueries({ queryKey: ["seller-profile"] });
+      setShowModal(false);
+      setManualPhoneId("");
+      setManualAccessToken("");
+      setManualPhoneNumber("");
+      toast({ title: "WhatsApp connected!", description: `${result.phone_number} is now active.` });
+    } catch (err: unknown) {
+      toast({ title: "Connection failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+    } finally {
+      setManualSaving(false);
     }
   }
 
@@ -269,63 +312,139 @@ export default function SellerWhatsApp() {
               Connect Your WhatsApp Number
             </DialogTitle>
             <DialogDescription>
-              Follow these simple steps to connect your business number.
+              Choose how you'd like to connect your business number.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 py-2">
-            <ol className="space-y-4">
-              {[
-                { step: 1, text: "Click the button below to open Meta's secure signup" },
-                { step: 2, text: "Enter your business phone number and verify with the OTP Meta sends you" },
-                { step: 3, text: "Done — your AI agent will now reply to customers on WhatsApp automatically" },
-              ].map(({ step, text }) => (
-                <li key={step} className="flex gap-3">
-                  <div className="shrink-0 w-7 h-7 rounded-full bg-[#25D366]/20 text-[#25D366] flex items-center justify-center text-sm font-bold">
-                    {step}
-                  </div>
-                  <p className="text-sm text-muted-foreground pt-0.5">{text}</p>
-                </li>
-              ))}
-            </ol>
+          <Tabs defaultValue="manual" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="manual" className="gap-2">
+                <KeyRound className="w-4 h-4" /> Manual Setup
+              </TabsTrigger>
+              <TabsTrigger value="embedded" className="gap-2">
+                <WhatsAppIcon className="w-4 h-4" /> Auto Setup
+              </TabsTrigger>
+            </TabsList>
 
-            <Button
-              id="whatsapp-signup-btn"
-              size="lg"
-              className="w-full gap-2 bg-[#25D366] hover:bg-[#1da851] text-white text-base"
-              onClick={handleStartSetup}
-              disabled={connecting}
-            >
-              {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <WhatsAppIcon className="w-5 h-5" />}
-              {connecting ? "Waiting for Meta popup…" : "Start WhatsApp Setup"}
-            </Button>
-
-            {connecting && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground"
-                onClick={() => {
-                  if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
-                  setConnecting(false);
-                }}
-              >
-                Cancel
-              </Button>
-            )}
-
-            <p className="text-xs text-center text-muted-foreground">
-              This takes about 3 minutes and happens only once.
-            </p>
-
-            <div className="flex gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
-              <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500 mt-0.5" />
-              <p className="text-xs text-yellow-200 leading-relaxed">
-                The phone number you connect cannot be used on the WhatsApp app
-                simultaneously. We recommend using a dedicated business number.
+            {/* ── Manual tab ── */}
+            <TabsContent value="manual" className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground">
+                Paste your credentials from{" "}
+                <strong className="text-foreground">Meta for Developers</strong>{" "}
+                → WhatsApp → API Setup. This works immediately without any approval process.
               </p>
-            </div>
-          </div>
+
+              <ol className="space-y-2 text-xs text-muted-foreground list-decimal list-inside">
+                <li>Go to <strong className="text-foreground">developers.facebook.com</strong> → your app → WhatsApp → API Setup</li>
+                <li>Copy the <strong className="text-foreground">Phone Number ID</strong> (not the phone number itself)</li>
+                <li>Generate a <strong className="text-foreground">permanent access token</strong> (System User → Generate Token)</li>
+                <li>Copy your business phone number (e.g. +961 70 123 456)</li>
+              </ol>
+
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label htmlFor="phone-number">Business Phone Number</Label>
+                  <Input
+                    id="phone-number"
+                    placeholder="+961 70 123 456"
+                    value={manualPhoneNumber}
+                    onChange={(e) => setManualPhoneNumber(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="phone-id">Phone Number ID</Label>
+                  <Input
+                    id="phone-id"
+                    placeholder="123456789012345"
+                    value={manualPhoneId}
+                    onChange={(e) => setManualPhoneId(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="access-token">Permanent Access Token</Label>
+                  <Input
+                    id="access-token"
+                    type="password"
+                    placeholder="EAA…"
+                    value={manualAccessToken}
+                    onChange={(e) => setManualAccessToken(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                className="w-full gap-2 bg-[#25D366] hover:bg-[#1da851] text-white"
+                onClick={handleManualSave}
+                disabled={manualSaving}
+              >
+                {manualSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <WhatsAppIcon className="w-5 h-5" />}
+                {manualSaving ? "Saving…" : "Save & Connect"}
+              </Button>
+
+              <div className="flex gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500 mt-0.5" />
+                <p className="text-xs text-yellow-200 leading-relaxed">
+                  The phone number you connect cannot be used on the regular WhatsApp app simultaneously. Use a dedicated business number.
+                </p>
+              </div>
+            </TabsContent>
+
+            {/* ── Embedded Signup tab ── */}
+            <TabsContent value="embedded" className="space-y-5 pt-4">
+              <ol className="space-y-4">
+                {[
+                  { step: 1, text: "Click the button below to open Meta's secure signup" },
+                  { step: 2, text: "Enter your business phone number and verify with the OTP Meta sends you" },
+                  { step: 3, text: "Done — your AI agent will now reply to customers on WhatsApp automatically" },
+                ].map(({ step, text }) => (
+                  <li key={step} className="flex gap-3">
+                    <div className="shrink-0 w-7 h-7 rounded-full bg-[#25D366]/20 text-[#25D366] flex items-center justify-center text-sm font-bold">
+                      {step}
+                    </div>
+                    <p className="text-sm text-muted-foreground pt-0.5">{text}</p>
+                  </li>
+                ))}
+              </ol>
+
+              <Button
+                id="whatsapp-signup-btn"
+                size="lg"
+                className="w-full gap-2 bg-[#25D366] hover:bg-[#1da851] text-white text-base"
+                onClick={handleStartSetup}
+                disabled={connecting}
+              >
+                {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <WhatsAppIcon className="w-5 h-5" />}
+                {connecting ? "Waiting for Meta popup…" : "Start WhatsApp Setup"}
+              </Button>
+
+              {connecting && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  onClick={() => {
+                    if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+                    setConnecting(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+
+              <p className="text-xs text-center text-muted-foreground">
+                This takes about 3 minutes and happens only once.
+              </p>
+
+              <div className="flex gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                <AlertTriangle className="w-5 h-5 shrink-0 text-yellow-500 mt-0.5" />
+                <p className="text-xs text-yellow-200 leading-relaxed">
+                  The phone number you connect cannot be used on the WhatsApp app
+                  simultaneously. We recommend using a dedicated business number.
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
