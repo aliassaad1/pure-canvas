@@ -36,11 +36,16 @@ export default function SellerWhatsApp() {
   async function handleConnect() {
     setConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-connect", {
-        body: { seller_id: seller!.id },
-      });
-      if (error) throw new Error(error.message ?? "Connection failed");
-      if (data?.error) throw new Error(data.error);
+      const res = await fetch(
+        "https://epoqhtjaqmwqmapfrcwn.supabase.co/functions/v1/whatsapp-connect",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ seller_id: seller!.id }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Connection failed");
 
       setJoinKeyword(data?.join_keyword ?? "");
       setStep(2);
