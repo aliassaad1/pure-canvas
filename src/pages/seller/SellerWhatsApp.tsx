@@ -47,8 +47,15 @@ export default function SellerWhatsApp() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Connection failed");
 
-      setJoinKeyword(data?.join_keyword ?? "");
-      setStep(2);
+      if (data?.is_sandbox) {
+        // Sandbox fallback — need join step
+        setJoinKeyword(data?.join_keyword ?? "");
+        setStep(2);
+      } else {
+        // Real number purchased — connected immediately
+        await queryClient.invalidateQueries({ queryKey: ["seller-profile"] });
+        toast({ title: "WhatsApp connected!", description: `Your number is ${data.phone_number}` });
+      }
     } catch (err: unknown) {
       toast({
         title: "Connection failed",
