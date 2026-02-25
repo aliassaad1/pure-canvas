@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSellerProfile } from "@/hooks/useSellerProfile";
 import { useQueryClient } from "@tanstack/react-query";
+import { WhatsAppInbox } from "@/components/seller/WhatsAppInbox";
 
 const WhatsAppIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -142,13 +143,6 @@ export default function SellerWhatsApp() {
               <Badge className="bg-[#25D366]/20 text-[#25D366] border-[#25D366]/30">Active</Badge>
             </div>
 
-            <div className="flex gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Customers who message this number on WhatsApp will get instant AI replies based on your store products and settings.
-              </p>
-            </div>
-
             <div className="pt-2 border-t border-border">
               <Button
                 variant="outline" size="sm"
@@ -162,6 +156,9 @@ export default function SellerWhatsApp() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Conversations inbox */}
+        <WhatsAppInbox sellerId={seller!.id} />
       </div>
     );
   }
