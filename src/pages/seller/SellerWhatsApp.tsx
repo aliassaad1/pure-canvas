@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Loader2, AlertTriangle, Check, Unplug, Info, Phone,
-  MessageSquare, Wifi, ChevronDown, ChevronUp, Zap, Settings2, ExternalLink,
+  MessageSquare, ChevronDown, ChevronUp, Zap, Settings2, ExternalLink,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -607,71 +607,11 @@ export default function SellerWhatsApp() {
   }
 
   /* ════════════════════════════════════════════════
-     BYCHAT METHOD — STEP 1 (ONE BUTTON)
+     BYCHAT METHOD — COMING SOON (redirect back)
      ════════════════════════════════════════════════ */
   if (method === "bychat") {
-    return (
-      <div className="space-y-6 max-w-xl">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <WhatsAppIcon className="w-6 h-6 text-[#25D366]" />
-            Quick Connect via ByChat
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            We'll assign you a WhatsApp number instantly — no setup needed.
-          </p>
-        </div>
-
-        <Card className="glass-card border-border">
-          <CardContent className="p-6 space-y-5">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                ByChat will assign you a WhatsApp number instantly. Customers can message that number and your AI agent will reply 24/7 — no extra setup on your side.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { icon: Wifi, text: "A WhatsApp number is assigned to your store" },
-                { icon: MessageSquare, text: "Customers message it, AI replies automatically" },
-                { icon: Check, text: "Works with your existing store products and AI settings" },
-              ].map(({ icon: Icon, text }, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <div className="w-7 h-7 rounded-full bg-[#25D366]/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-[#25D366]" />
-                  </div>
-                  {text}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-yellow-500 mt-0.5" />
-              <p className="text-xs text-yellow-200 leading-relaxed">
-                This option is currently in <b>testing mode</b>. You'll get a shared test number. For a dedicated number with your own branding, use the "Connect Your Own Number" option instead.
-              </p>
-            </div>
-
-            <Button
-              size="lg"
-              className="w-full gap-2 bg-[#25D366] hover:bg-[#1da851] text-white text-base"
-              onClick={handleByChatConnect}
-              disabled={connecting}
-            >
-              {connecting
-                ? <Loader2 className="w-5 h-5 animate-spin" />
-                : <WhatsAppIcon className="w-5 h-5" />}
-              {connecting ? "Setting up your number..." : "Connect WhatsApp"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => setMethod(null)}>
-          Back to options
-        </Button>
-      </div>
-    );
+    // This option is disabled / coming soon — redirect back to selection
+    setMethod(null);
   }
 
   /* ════════════════════════════════════════════════
@@ -739,47 +679,37 @@ export default function SellerWhatsApp() {
           </CardContent>
         </Card>
 
-        {/* Option B: ByChat Number (Twilio) */}
-        <Card
-          className="glass-card border-border hover:border-primary/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-          onClick={() => setMethod("bychat")}
-        >
+        {/* Option B: ByChat Number (Twilio) — Coming Soon */}
+        <Card className="glass-card border-border opacity-60 cursor-not-allowed relative overflow-hidden">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted-foreground/30 to-muted-foreground/20 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-muted-foreground" />
               </div>
               <div>
-                <Badge variant="outline" className="text-xs mb-1">
-                  Testing Mode
+                <Badge variant="outline" className="text-xs mb-1 border-yellow-500/40 text-yellow-400">
+                  Coming Soon
                 </Badge>
-                <h3 className="font-semibold text-base">ByChat Number</h3>
+                <h3 className="font-semibold text-base">ByChat Dedicated Number</h3>
               </div>
             </div>
 
             <p className="text-sm text-muted-foreground leading-relaxed">
-              ByChat assigns you a WhatsApp number instantly. <b>One click</b>, no setup needed. Great for testing.
+              We buy and assign a <b>dedicated WhatsApp number</b> for your store. One click — no setup needed on your side. Your AI agent is connected to it automatically.
             </p>
 
             <div className="space-y-2">
               {[
-                "One-click setup",
+                "One-click setup — we do everything",
+                "Dedicated number just for your store",
                 "No Meta account needed",
-                "Great for trying it out",
+                "AI agent connected automatically",
               ].map((text, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
                   {text}
                 </div>
               ))}
-              <div className="flex items-center gap-2 text-xs text-yellow-400">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                Shared test number (not your own)
-              </div>
-              <div className="flex items-center gap-2 text-xs text-yellow-400">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                Customers need activation step
-              </div>
             </div>
 
             <div className="pt-2 border-t border-border">
@@ -788,9 +718,9 @@ export default function SellerWhatsApp() {
               </p>
             </div>
 
-            <Button variant="outline" className="w-full gap-2">
+            <Button variant="outline" className="w-full gap-2" disabled>
               <Zap className="w-4 h-4" />
-              Quick Connect
+              Coming Soon
             </Button>
           </CardContent>
         </Card>
@@ -801,7 +731,7 @@ export default function SellerWhatsApp() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
             <Info className="w-4 h-4" />
-            Which should I choose?
+            What's the difference?
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm space-y-3">
@@ -811,29 +741,34 @@ export default function SellerWhatsApp() {
                 <tr className="border-b border-border">
                   <th className="text-left py-2 pr-4 text-muted-foreground font-medium"></th>
                   <th className="text-left py-2 px-3 font-medium text-[#25D366]">Your Own Number</th>
-                  <th className="text-left py-2 px-3 font-medium">ByChat Number</th>
+                  <th className="text-left py-2 px-3 font-medium text-muted-foreground">ByChat Number <span className="text-yellow-400">(Soon)</span></th>
                 </tr>
               </thead>
               <tbody className="text-muted-foreground">
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4 font-medium text-foreground">Phone number</td>
-                  <td className="py-2 px-3">Your real business number</td>
-                  <td className="py-2 px-3">Shared test number</td>
+                  <td className="py-2 pr-4 font-medium text-foreground">How it works</td>
+                  <td className="py-2 px-3">You set up WhatsApp Business API and give us your credentials</td>
+                  <td className="py-2 px-3">We buy a number for you and connect it automatically</td>
                 </tr>
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4 font-medium text-foreground">Setup time</td>
-                  <td className="py-2 px-3">~15 minutes</td>
-                  <td className="py-2 px-3">1 minute</td>
+                  <td className="py-2 pr-4 font-medium text-foreground">Phone number</td>
+                  <td className="py-2 px-3">Your own real number</td>
+                  <td className="py-2 px-3">A dedicated number we assign to you</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium text-foreground">Setup</td>
+                  <td className="py-2 px-3">~15 minutes (you do it yourself)</td>
+                  <td className="py-2 px-3">1 click (we handle everything)</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4 font-medium text-foreground">Customer experience</td>
-                  <td className="py-2 px-3">Seamless — they just message you</td>
-                  <td className="py-2 px-3">Need to send activation message first</td>
+                  <td className="py-2 px-3">They message your real number</td>
+                  <td className="py-2 px-3">They message the number we give you</td>
                 </tr>
                 <tr className="border-b border-border/50">
-                  <td className="py-2 pr-4 font-medium text-foreground">Best for</td>
-                  <td className="py-2 px-3">Real business use</td>
-                  <td className="py-2 px-3">Testing & demos</td>
+                  <td className="py-2 pr-4 font-medium text-foreground">Status</td>
+                  <td className="py-2 px-3 text-[#25D366] font-medium">Available now</td>
+                  <td className="py-2 px-3 text-yellow-400 font-medium">Coming soon</td>
                 </tr>
                 <tr>
                   <td className="py-2 pr-4 font-medium text-foreground">Cost</td>
