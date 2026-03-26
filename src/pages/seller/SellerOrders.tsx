@@ -89,7 +89,14 @@ export default function SellerOrders() {
                         {order.status}
                       </Badge>
                     </div>
-                    <p className="font-medium">{order.buyer_name}</p>
+                    <p className="font-medium flex items-center gap-2">
+                      {order.buyer_name}
+                      {order.customer_phone && (
+                        <Badge variant="outline" className="text-[10px] bg-[#25D366]/10 text-[#25D366] border-[#25D366]/30">
+                          WhatsApp
+                        </Badge>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(order.created_at).toLocaleString()}
                     </p>
@@ -123,8 +130,11 @@ export default function SellerOrders() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Buyer</p>
+                  <p className="text-muted-foreground">Customer</p>
                   <p className="font-medium">{selectedOrder.buyer_name}</p>
+                  {selectedOrder.customer_phone && (
+                    <p className="text-xs text-[#25D366]">via WhatsApp ({selectedOrder.customer_phone})</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total</p>
