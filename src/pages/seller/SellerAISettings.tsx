@@ -30,7 +30,7 @@ type AgentConfig = {
   special_instructions: string;
   agent_name: string;
   tone: "professional" | "friendly" | "casual";
-  language: "arabic" | "english" | "both";
+  language: "arabic" | "english" | "lebanese" | "both";
   auto_greeting: string;
   can_take_orders: boolean;
   can_give_quotes: boolean;
@@ -371,15 +371,19 @@ export default function SellerAISettings() {
                 onValueChange={(v) => update("language", v as AgentConfig["language"])}
               >
                 {[
-                  { value: "arabic", label: "Arabic" },
-                  { value: "english", label: "English" },
-                  { value: "both", label: "Both" },
+                  { value: "arabic", label: "Arabic", desc: "Responds in Modern Standard Arabic" },
+                  { value: "english", label: "English", desc: "Responds in English only" },
+                  { value: "lebanese", label: "Lebanese (Internet)", desc: "Responds in Lebanese dialect / Franco-Arab internet style (e.g. \"kifak\", \"shu baddak\")" },
+                  { value: "both", label: "Auto-detect", desc: "Matches the customer's language automatically" },
                 ].map((opt) => (
-                  <div key={opt.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={opt.value} id={`lang-${opt.value}`} />
-                    <Label htmlFor={`lang-${opt.value}`} className="font-normal cursor-pointer">
-                      {opt.label}
-                    </Label>
+                  <div key={opt.value} className="flex items-start space-x-2">
+                    <RadioGroupItem value={opt.value} id={`lang-${opt.value}`} className="mt-0.5" />
+                    <div>
+                      <Label htmlFor={`lang-${opt.value}`} className="font-normal cursor-pointer">
+                        {opt.label}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </div>
                   </div>
                 ))}
               </RadioGroup>
