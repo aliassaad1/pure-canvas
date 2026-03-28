@@ -104,7 +104,7 @@ export default function SellerOrders() {
                   <div className="text-right">
                     <p className="text-lg font-bold">${Number(order.total_price).toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {Array.isArray(order.items) ? order.items.length : 0} items
+                      {Array.isArray(order.items) ? order.items.reduce((sum: number, i: any) => sum + (i.qty || i.quantity || 1), 0) : 0} items
                     </p>
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function SellerOrders() {
                     selectedOrder.items.map((item: any, i: number) => (
                       <div key={i} className="flex justify-between p-2 rounded bg-muted/30 text-sm">
                         <span>{item.name ?? `Item ${i + 1}`}</span>
-                        <span className="font-medium">${Number(item.price ?? 0).toFixed(2)} × {item.quantity ?? 1}</span>
+                        <span className="font-medium">${Number(item.price ?? 0).toFixed(2)} × {item.qty ?? item.quantity ?? 1}</span>
                       </div>
                     ))
                   ) : (
