@@ -11,7 +11,7 @@ import SellerDashboard from "./pages/seller/SellerDashboard";
 import SellerProducts from "./pages/seller/SellerProducts";
 import SellerOrders from "./pages/seller/SellerOrders";
 import SellerStatistics from "./pages/seller/SellerStatistics";
-import SellerPlaceholder from "./pages/seller/SellerPlaceholder";
+import SellerSettings from "./pages/seller/SellerSettings";
 import SellerAISettings from "./pages/seller/SellerAISettings";
 import SellerIntegrations from "./pages/seller/SellerIntegrations";
 import SellerWhatsApp from "./pages/seller/SellerWhatsApp";
@@ -47,7 +47,7 @@ const App = () => (
             <Route path="integrations" element={<SellerIntegrations />} />
             <Route path="whatsapp" element={<SellerWhatsApp />} />
             <Route path="shopify" element={<SellerShopify />} />
-            <Route path="settings" element={<SellerPlaceholder />} />
+            <Route path="settings" element={<SellerSettings />} />
           </Route>
 
           {/* Buyer Dashboard */}
