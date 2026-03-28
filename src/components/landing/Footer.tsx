@@ -8,7 +8,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo-icon.png" alt="ByChat" className="w-12 h-12 rounded-xl" />
+              <img src="/logo-icon.png" alt="ByChat" className="w-16 h-16 -m-2 object-contain" />
               <span className="text-xl font-bold gradient-text">ByChat</span>
             </Link>
             <p className="text-sm text-muted-foreground">
