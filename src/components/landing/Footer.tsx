@@ -1,4 +1,3 @@
-import { MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -9,9 +8,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-primary-foreground" />
-              </div>
+              <img src="/logo-icon.png" alt="ByChat" className="w-10 h-10 rounded-xl" />
               <span className="text-xl font-bold gradient-text">ByChat</span>
             </Link>
             <p className="text-sm text-muted-foreground">

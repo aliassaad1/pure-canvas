@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MessageSquare, ShoppingBag, Store, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Store, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BuyerSignup from "@/components/auth/BuyerSignup";
 import SellerSignup from "@/components/auth/SellerSignup";
@@ -47,9 +47,7 @@ const Auth = () => {
           className="text-center mb-8"
         >
           <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:shadow-[0_0_30px_hsl(190,100%,50%,0.4)] transition-shadow duration-300">
-              <MessageSquare className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img src="/logo-icon.png" alt="ByChat" className="w-10 h-10 rounded-xl group-hover:shadow-[0_0_30px_hsl(190,100%,50%,0.4)] transition-shadow duration-300" />
             <span className="text-xl font-bold gradient-text">ByChat</span>
           </Link>
         </motion.div>

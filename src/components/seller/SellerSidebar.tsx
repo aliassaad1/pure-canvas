@@ -53,9 +53,7 @@ export function SellerSidebar() {
     <Sidebar className="border-r border-border">
       <div className="p-4 border-b border-border">
         <NavLink to="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <MessageSquare className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img src="/logo-icon.png" alt="ByChat" className="w-8 h-8 rounded-lg" />
           <span className="text-lg font-bold gradient-text">ByChat</span>
         </NavLink>
       </div>

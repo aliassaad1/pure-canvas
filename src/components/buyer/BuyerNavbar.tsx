@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MessageSquare, Store, ShoppingBag, Search, User, LogOut, ShoppingCart } from "lucide-react";
+import { Store, ShoppingBag, Search, User, LogOut, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
@@ -28,9 +28,7 @@ export function BuyerNavbar() {
     <header className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/buyer" className="flex items-center gap-2 group shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <MessageSquare className="w-4 h-4 text-primary-foreground" />
-          </div>
+          <img src="/logo-icon.png" alt="ByChat" className="w-8 h-8 rounded-lg" />
           <span className="text-lg font-bold gradient-text hidden sm:inline">ByChat</span>
         </Link>
 
