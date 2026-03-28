@@ -47,7 +47,7 @@ const Auth = () => {
           className="text-center mb-8"
         >
           <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <img src="/logo-icon.png" alt="ByChat" className="w-10 h-10 rounded-xl group-hover:shadow-[0_0_30px_hsl(190,100%,50%,0.4)] transition-shadow duration-300" />
+            <img src="/logo-icon.png" alt="ByChat" className="w-12 h-12 rounded-xl mix-blend-lighten group-hover:shadow-[0_0_30px_hsl(190,100%,50%,0.4)] transition-shadow duration-300" />
             <span className="text-xl font-bold gradient-text">ByChat</span>
           </Link>
         </motion.div>
